@@ -9,9 +9,12 @@ for filename in glob.glob('payscaleSpiderResult/*.json'):
         content = json.load(f)
     
     # format salary
-    content["salary"] = content["salary"].replace("S$", '').replace("k", "000")
-    content["salary"] = int(content["salary"]) / 12
-    full_data.append(content)
+    for cont in content:
+        print(cont)
+        if type(cont["salary"]) == "str":
+            print(cont["salary"])
+        cont["salary"] = cont["salary"] / 12
+    full_data.extend(content)
 
 df = pd.DataFrame(full_data)
 df.to_csv("CategoryIndustrySalary.csv", index=False)

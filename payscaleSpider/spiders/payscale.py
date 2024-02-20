@@ -51,13 +51,27 @@ class PayscaleSpider(scrapy.Spider):
 
     def parse_salary(self, response, category, industry):
         parsed_html = BeautifulSoup(response.body, 'lxml')
-        salary = parsed_html.select_one("span[class='default-overview__value']")
-        # print(category, industry, salary.text)
+        # data can be found on __NEXT_DATA__ script
+        json_data = parsed_html.select_one("script[id='__NEXT_DATA__']")
+        parsed_json = json.loads(json_data.text)
+        job_salaries = parsed_json["props"]["pageProps"]["pageData"]["byDimension"]
+        if job_salaries == None:
+            return
+
+        job_salaries = job_salaries["Average Salary by Job"]["rows"]
+        
         category = category.replace("/", " or ")
         industry = industry.replace("/", " or ")
+        salary_obj = []
+        for job_salary in job_salaries:
+            for quantile in job_salary["range"]:
+                salary_obj.append({
+                    "category": category,
+                    "industry": industry,
+                    "job_title": job_salary["name"],
+                    "quantile": quantile,
+                    "salary": job_salary["range"][quantile]
+                })
+        
         with open(f"payscaleSpiderResult/{category}_{industry}.json", 'w') as f:
-            json.dump({
-                "category": category,
-                "industry": industry,
-                "salary": salary.text
-            }, f, indent=4)
+            json.dump(salary_obj, f, indent=4)
