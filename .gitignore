@@ -1,4 +1,4 @@
 __pycache__/
-payscaleSpiderResult/*
+payscaleSpiderResult/*.json
 *.xlsx
 *.csv
